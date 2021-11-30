@@ -30,7 +30,8 @@ namespace CrytptoInfo.POCWork
 
                 if (deserializedResponse != null)
                 {
-                    var test = deserializedResponse;
+                    Console.WriteLine("Success");
+                    Console.ReadLine();
                 }
             }
         }
