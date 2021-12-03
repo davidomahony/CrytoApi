@@ -37,7 +37,7 @@ namespace CrytpoInfo.CryptAPI.Controllers
             }
 
             var responseBody = this.historicalDataService.AcquireHistoricalData(requestInfo);
-            if (responseBody.DailyFigures == null || !responseBody.DailyFigures.Any())
+            if (responseBody?.DailyFigures == null || !responseBody.DailyFigures.Any())
             {
                 return BadRequest(responseBody);
             }
@@ -62,7 +62,7 @@ namespace CrytpoInfo.CryptAPI.Controllers
             }
 
             // clean up once added
-            if (!this.supportedCurrencies.Contains(request.CurrencyName))
+            if (this.supportedCurrencies.Contains(request.CurrencyName))
             {
                 errMsg = "Inputted currency is not supported";
                 return false;
