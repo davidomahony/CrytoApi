@@ -1,3 +1,7 @@
+using CrytpoInfo.Buisness.Repositories;
+using CrytpoInfo.Core.Repositories;
+using CrytpoInfo.CryptAPI.Services;
+using CrytpoInfo.Models;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -32,6 +36,11 @@ namespace CrytpoInfo.CryptAPI
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "CrytpoInfo.CryptAPI", Version = "v1" });
             });
+
+            services.AddHttpClient<CoinMarketHistoricalDataRepository>(cl =>
+                cl.BaseAddress = new Uri(Configuration["HistoricalData:Repositories:CoinMarket:Url"]));
+
+            services.AddSingleton<IHistoricalDataRepository<HistoricalDataResults>, CoinMarketHistoricalDataRepository>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
