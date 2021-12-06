@@ -1,9 +1,7 @@
 ﻿using CrytpoInfo.Core.Repositories;
 using CrytpoInfo.Models;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace CrytpoInfo.CryptAPI.Services
 {
@@ -11,22 +9,36 @@ namespace CrytpoInfo.CryptAPI.Services
     {
         private readonly IHistoricalDataRepository<HistoricalDataResults> repository;
 
-
         public HistoricalDataService(IHistoricalDataRepository<HistoricalDataResults> repository)
         {
             this.repository = repository;
         }
 
-        public HistoricalDataResults AcquireHistoricalData(HistoricalDataRequest requestInformation)
+        public HistoricalDataResponse AcquireHistoricalData(HistoricalDataRequest requestInformation, Guid requestId)
         {
             var historicalDataResult = this.repository.AcquireHistoricalData(requestInformation);
-
             if (historicalDataResult is null)
             {
                 // will decide later how to handle
             }
 
-            return historicalDataResult;
+            if (historicalDataResult?.DailyFigures == null || !historicalDataResult.DailyFigures.Any())
+            {
+                return new HistoricalDataResponse()
+                {
+                    Results = null,
+                    Success = false,
+                    RequestId = requestId,
+                    ErrorMessage = "Big error"
+                };
+            }
+
+            return new HistoricalDataResponse()
+            {
+                Results = historicalDataResult,
+                Success = true,
+                RequestId = requestId
+            };
         }
     }
 }

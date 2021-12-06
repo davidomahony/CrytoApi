@@ -1,6 +1,7 @@
 ﻿using CrytpoInfo.CryptAPI.Services;
 using CrytpoInfo.Models;
 using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -11,60 +12,56 @@ namespace CrytpoInfo.CryptAPI.Controllers
     public class HistoricalDataController : ControllerBase
     {
         private readonly HistoricalDataService historicalDataService;
-        private readonly IEnumerable<string> supportedCurrencies;
 
         public HistoricalDataController(HistoricalDataService historicalDataService)
         {
             this.historicalDataService = historicalDataService;
-            this.supportedCurrencies = Enumerable.Empty<string>();
         }
 
         [HttpGet]
         [Route("Info")]
         public IActionResult Info()
         {
-            return Ok("I have some information");
+            return Ok("Just using coin market ATM");
         }
 
         [HttpGet]
         [Route("FetchData")]
-        public IActionResult HistoricalData([FromQuery] HistoricalDataRequest requestInfo)
+        public IActionResult FetchData([FromQuery] HistoricalDataRequest requestInfo)
         {
-            // maybe validate request
-            if (!this.IsValidRequest(requestInfo, out string errMsg))
+            var requestId = Guid.NewGuid();
+            if (!this.IsValidRequest(requestInfo, out BaseResponse errorReponse))
             {
-                return BadRequest(errMsg);
+                errorReponse.RequestId = requestId;
+                return BadRequest(errorReponse);
             }
 
-            var responseBody = this.historicalDataService.AcquireHistoricalData(requestInfo);
-            if (responseBody?.DailyFigures == null || !responseBody.DailyFigures.Any())
-            {
-                return BadRequest(responseBody);
-            }
-
+            var responseBody = this.historicalDataService.AcquireHistoricalData(requestInfo, requestId);
             return Ok(responseBody);
         }
 
-        private bool IsValidRequest(HistoricalDataRequest request, out string errMsg)
+        private bool IsValidRequest(HistoricalDataRequest request, out BaseResponse errResponse)
         {
-            errMsg = string.Empty;
+            errResponse = null;
+            string errMsg = string.Empty;
 
             if (request.StartDate.CompareTo(request.EndDate) > 0)
             {
                 errMsg = "StartDate is after EndDate";
-                return false;
             }
 
             if (request.TimeInterval < 1)
             {
                 errMsg = "Please ensure time interval is a non negative value";
-                return false;
             }
 
-            // clean up once added
-            if (this.supportedCurrencies.Contains(request.CurrencyName))
+            if (!string.IsNullOrEmpty(errMsg))
             {
-                errMsg = "Inputted currency is not supported";
+                errResponse = new BaseResponse()
+                {
+                    Success = false,
+                    ErrorMessage = errMsg
+                };
                 return false;
             }
 

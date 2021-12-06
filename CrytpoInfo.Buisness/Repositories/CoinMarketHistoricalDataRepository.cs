@@ -1,9 +1,11 @@
 ﻿using CrytpoInfo.Core.CoinMarket;
 using CrytpoInfo.Core.Repositories;
 using CrytpoInfo.Models;
+using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using System;
-using System.Configuration;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 
 namespace CrytpoInfo.Buisness.Repositories
@@ -11,10 +13,14 @@ namespace CrytpoInfo.Buisness.Repositories
     public class CoinMarketHistoricalDataRepository : IHistoricalDataRepository<HistoricalDataResults>
     {
         private readonly HttpClient client;
+        private readonly Dictionary<string, string> supportedCurrenciesIndex;
 
-        public CoinMarketHistoricalDataRepository(HttpClient client)
+        public CoinMarketHistoricalDataRepository(HttpClient client, IConfiguration config)
         {
             this.client = client;
+            var dictionaryOfCurrencies = config.GetSection("HistoricalData:Repositories:CoinMarket:SupportedCurrencies").GetChildren()
+                .Select(itm => itm.Value.Split('-')).ToDictionary(itm => itm[0], itm => itm[1]);
+            this.supportedCurrenciesIndex = new Dictionary<string, string>(dictionaryOfCurrencies, StringComparer.OrdinalIgnoreCase);
         }
 
         public HistoricalDataResults AcquireHistoricalData(HistoricalDataRequest information)
@@ -40,15 +46,20 @@ namespace CrytpoInfo.Buisness.Repositories
             var startTimeUnix = ((DateTimeOffset)information.StartDate).ToUnixTimeSeconds();
             var endTimeUnix = ((DateTimeOffset)information.EndDate).ToUnixTimeSeconds();
 
-            var request = new HttpRequestMessage(HttpMethod.Get, new Uri($"https://api.coinmarketcap.com/data-api/v3/cryptocurrency/historical?id=1&convertId=2781&timeStart={startTimeUnix}&timeEnd={endTimeUnix}"));
-            request.Headers.Add("authority", "api.coinmarketcap.com");
-            request.Headers.Add("path", $"/data-api/v3/cryptocurrency/historical?id=1&convertId=2781&timeStart={startTimeUnix}&timeEnd={endTimeUnix}");
-            request.Headers.Add("authority", "api.coinmarketcap.com");
-            request.Headers.Add("Accept", "*/*");
-            request.Headers.Add("User-Agent", "PostmanRuntime/7.28.4");
-            request.Headers.Add("Connection", "keep-alive");
+            if (this.supportedCurrenciesIndex.TryGetValue(information.CurrencyName, out string key))
+            {
+                var request = new HttpRequestMessage(HttpMethod.Get, new Uri($"https://api.coinmarketcap.com/data-api/v3/cryptocurrency/historical?id={key}&convertId=2781&timeStart={startTimeUnix}&timeEnd={endTimeUnix}"));
+                request.Headers.Add("authority", "api.coinmarketcap.com");
+                request.Headers.Add("path", $"/data-api/v3/cryptocurrency/historical?id={key}&convertId=2781&timeStart={startTimeUnix}&timeEnd={endTimeUnix}");
+                request.Headers.Add("authority", "api.coinmarketcap.com");
+                request.Headers.Add("Accept", "*/*");
+                request.Headers.Add("User-Agent", "PostmanRuntime/7.28.4");
+                request.Headers.Add("Connection", "keep-alive");
 
-            return request;
+                return request;
+            }
+
+            throw new InvalidOperationException();
         }
     }
 }
