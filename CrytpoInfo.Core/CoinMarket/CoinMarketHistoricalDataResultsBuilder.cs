@@ -27,7 +27,7 @@ namespace CrytpoInfo.Core.CoinMarket
                         OpenPrice = quote.Quote.Open,
                         Fluctuation = quote.Quote.High - quote.Quote.Low
                     };
-                }).ToArray()
+                })
             };
         }
     }

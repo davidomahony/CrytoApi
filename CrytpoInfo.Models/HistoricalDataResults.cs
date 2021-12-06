@@ -10,7 +10,7 @@ namespace CrytpoInfo.Models
 
         public string Symbol { get; set; }
 
-        public DailyFigure[] DailyFigures { get; set; }
+        public IEnumerable<DailyFigure> DailyFigures { get; set; }
     }
 
     public class DailyFigure

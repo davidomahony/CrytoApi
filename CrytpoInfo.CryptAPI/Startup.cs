@@ -37,10 +37,10 @@ namespace CrytpoInfo.CryptAPI
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "CrytpoInfo.CryptAPI", Version = "v1" });
             });
 
+            services.AddSingleton(Configuration);
+
             services.AddHttpClient<IHistoricalDataRepository<HistoricalDataResults>, CoinMarketHistoricalDataRepository>(cl =>
                 cl.BaseAddress = new Uri(Configuration["HistoricalData:Repositories:CoinMarket:Url"]));
-
-            //services.AddSingleton<IHistoricalDataRepository<HistoricalDataResults>, CoinMarketHistoricalDataRepository>();
             services.AddSingleton<HistoricalDataService>();
         }
 

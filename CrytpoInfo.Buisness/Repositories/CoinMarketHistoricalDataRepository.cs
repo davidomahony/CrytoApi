@@ -3,6 +3,7 @@ using CrytpoInfo.Core.Repositories;
 using CrytpoInfo.Models;
 using Newtonsoft.Json;
 using System;
+using System.Configuration;
 using System.Net.Http;
 
 namespace CrytpoInfo.Buisness.Repositories
@@ -11,11 +12,14 @@ namespace CrytpoInfo.Buisness.Repositories
     {
         private readonly HttpClient client;
 
-        public CoinMarketHistoricalDataRepository(HttpClient client) => this.client = client;
+        public CoinMarketHistoricalDataRepository(HttpClient client)
+        {
+            this.client = client;
+        }
 
         public HistoricalDataResults AcquireHistoricalData(HistoricalDataRequest information)
         {
-            var request = this.GenerateRequestMessage();
+            var request = this.GenerateRequestMessage(information);
 
             var result = this.client.Send(request);
 
@@ -31,11 +35,14 @@ namespace CrytpoInfo.Buisness.Repositories
             return null;
         }
 
-        private HttpRequestMessage GenerateRequestMessage()
+        private HttpRequestMessage GenerateRequestMessage(HistoricalDataRequest information)
         {
-            var request = new HttpRequestMessage(HttpMethod.Get, new Uri("https://api.coinmarketcap.com/data-api/v3/cryptocurrency/historical?id=2&convertId=2781&timeStart=1535040000&timeEnd=1738144000"));
+            var startTimeUnix = ((DateTimeOffset)information.StartDate).ToUnixTimeSeconds();
+            var endTimeUnix = ((DateTimeOffset)information.EndDate).ToUnixTimeSeconds();
+
+            var request = new HttpRequestMessage(HttpMethod.Get, new Uri($"https://api.coinmarketcap.com/data-api/v3/cryptocurrency/historical?id=1&convertId=2781&timeStart={startTimeUnix}&timeEnd={endTimeUnix}"));
             request.Headers.Add("authority", "api.coinmarketcap.com");
-            request.Headers.Add("path", "/data-api/v3/cryptocurrency/historical?id=1&convertId=2781&timeStart=1627516800&timeEnd=1638144000");
+            request.Headers.Add("path", $"/data-api/v3/cryptocurrency/historical?id=1&convertId=2781&timeStart={startTimeUnix}&timeEnd={endTimeUnix}");
             request.Headers.Add("authority", "api.coinmarketcap.com");
             request.Headers.Add("Accept", "*/*");
             request.Headers.Add("User-Agent", "PostmanRuntime/7.28.4");
