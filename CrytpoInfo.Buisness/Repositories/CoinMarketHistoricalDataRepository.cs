@@ -1,4 +1,5 @@
-﻿using CrytpoInfo.Core.CoinMarket;
+﻿using CrytpoInfo.Buisness.Exceptions;
+using CrytpoInfo.Core.CoinMarket;
 using CrytpoInfo.Core.Repositories;
 using CrytpoInfo.Models;
 using Microsoft.Extensions.Configuration;
@@ -27,18 +28,24 @@ namespace CrytpoInfo.Buisness.Repositories
         {
             var request = this.GenerateRequestMessage(information);
 
-            var result = this.client.Send(request);
-
-            if (result.StatusCode == System.Net.HttpStatusCode.OK)
+            try
             {
-                var responseContent = result.Content.ReadAsStringAsync().Result;
-                var deserializedResponse = JsonConvert.DeserializeObject<CoinMarketHistoricalDataResponse>(responseContent);
+                var result = this.client.Send(request);
+                if (result.StatusCode == System.Net.HttpStatusCode.OK)
+                {
+                    var responseContent = result.Content.ReadAsStringAsync().Result;
+                    var deserializedResponse = JsonConvert.DeserializeObject<CoinMarketHistoricalDataResponse>(responseContent);
 
-                var historicalResponseBuilder = new CoinMarketHistoricalDataResultsBuilder(deserializedResponse);
-                return historicalResponseBuilder.BuildHistoricalDataResponse();
+                    var historicalResponseBuilder = new CoinMarketHistoricalDataResultsBuilder(deserializedResponse);
+                    return historicalResponseBuilder.BuildHistoricalDataResponse();
+                }
+            }
+            catch (Exception ex)
+            {
+                // logg this
             }
 
-            return null;
+            throw new ApiException(System.Net.HttpStatusCode.InternalServerError, 50, "Failed to fetch results from ", information.RequestId);
         }
 
         private HttpRequestMessage GenerateRequestMessage(HistoricalDataRequest information)
@@ -59,7 +66,7 @@ namespace CrytpoInfo.Buisness.Repositories
                 return request;
             }
 
-            throw new InvalidOperationException();
+            throw new ApiException(System.Net.HttpStatusCode.BadRequest, 50, "Inputted currency is not supported", information.RequestId); ;
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using CrytpoInfo.Core.Repositories;
+﻿using CrytpoInfo.Buisness.Exceptions;
+using CrytpoInfo.Core.Repositories;
 using CrytpoInfo.Models;
 using System;
 using System.Linq;
@@ -14,30 +15,24 @@ namespace CrytpoInfo.CryptAPI.Services
             this.repository = repository;
         }
 
-        public HistoricalDataResponse AcquireHistoricalData(HistoricalDataRequest requestInformation, Guid requestId)
+        public HistoricalDataResponse AcquireHistoricalData(HistoricalDataRequest requestInformation)
         {
             var historicalDataResult = this.repository.AcquireHistoricalData(requestInformation);
             if (historicalDataResult is null)
             {
-                // will decide later how to handle
+                throw new ApiException(System.Net.HttpStatusCode.InternalServerError, 50, "No daily Figures returned", requestInformation.RequestId);
             }
 
             if (historicalDataResult?.DailyFigures == null || !historicalDataResult.DailyFigures.Any())
             {
-                return new HistoricalDataResponse()
-                {
-                    Results = null,
-                    Success = false,
-                    RequestId = requestId,
-                    ErrorMessage = "Big error"
-                };
+                throw new ApiException(System.Net.HttpStatusCode.InternalServerError, 51, "No daily Figures returned", requestInformation.RequestId);
             }
 
             return new HistoricalDataResponse()
             {
                 Results = historicalDataResult,
                 Success = true,
-                RequestId = requestId
+                RequestId = requestInformation.RequestId
             };
         }
     }

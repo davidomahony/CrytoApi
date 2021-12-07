@@ -6,8 +6,6 @@ namespace CrytpoInfo.Models
     {
         public Guid RequestId { get; set; }
 
-        public bool Success { get; set; }
-
-        public string ErrorMessage { get; set; } = null;
+        public bool? Success { get; set; } = null;
     }
 }

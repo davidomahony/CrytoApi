@@ -1,9 +1,8 @@
-﻿using CrytpoInfo.CryptAPI.Services;
+﻿using CrytpoInfo.Buisness.Exceptions;
+using CrytpoInfo.CryptAPI.Services;
 using CrytpoInfo.Models;
 using Microsoft.AspNetCore.Mvc;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace CrytpoInfo.CryptAPI.Controllers
 {
@@ -36,7 +35,8 @@ namespace CrytpoInfo.CryptAPI.Controllers
                 return BadRequest(errorReponse);
             }
 
-            var responseBody = this.historicalDataService.AcquireHistoricalData(requestInfo, requestId);
+            requestInfo.RequestId = requestId;
+            var responseBody = this.historicalDataService.AcquireHistoricalData(requestInfo);
             return Ok(responseBody);
         }
 
@@ -57,7 +57,7 @@ namespace CrytpoInfo.CryptAPI.Controllers
 
             if (!string.IsNullOrEmpty(errMsg))
             {
-                errResponse = new BaseResponse()
+                errResponse = new ErrorResponse()
                 {
                     Success = false,
                     ErrorMessage = errMsg
