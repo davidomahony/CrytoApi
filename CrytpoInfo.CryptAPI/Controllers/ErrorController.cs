@@ -1,4 +1,5 @@
 ﻿using CrytpoInfo.Buisness;
+using CrytpoInfo.Buisness.ErrorResponseBuilders;
 using CrytpoInfo.Buisness.Exceptions;
 using CrytpoInfo.Models;
 using Microsoft.AspNetCore.Authorization;
@@ -17,13 +18,19 @@ namespace CrytpoInfo.CryptAPI.Controllers
             var context = HttpContext.Features.Get<IExceptionHandlerFeature>();
             var exception = context.Error;
 
+            // As we only have one exception at the moment this will do.
             if (exception is ApiException apiException)
             {
-                var responseBuilder = new ErrorResponseBuilder(apiException);
+                var responseBuilder = new ApiExceptionErrorResponseBuilder(apiException);
                 return responseBuilder.BuildResponse();
             }
 
-            return null;
+            // This is weird and should not happen.
+            return new ErrorResponse()
+            {
+                StatusCode = System.Net.HttpStatusCode.InternalServerError,
+                ErrorMessage = exception.Message
+            };
         }
     }
 }

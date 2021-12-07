@@ -1,13 +1,13 @@
 ﻿using CrytpoInfo.Buisness.Exceptions;
 using CrytpoInfo.Models;
 
-namespace CrytpoInfo.Buisness
+namespace CrytpoInfo.Buisness.ErrorResponseBuilders
 {
-    public class ErrorResponseBuilder
+    public class ApiExceptionErrorResponseBuilder
     {
         private ApiException exception;
 
-        public ErrorResponseBuilder(ApiException apiException)
+        public ApiExceptionErrorResponseBuilder(ApiException apiException)
         {
             this.exception = apiException;
         }

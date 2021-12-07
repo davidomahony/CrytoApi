@@ -3,11 +3,13 @@ using CrytpoInfo.CryptAPI.Services;
 using CrytpoInfo.Models;
 using Microsoft.AspNetCore.Mvc;
 using System;
+using System.ComponentModel.DataAnnotations;
 
 namespace CrytpoInfo.CryptAPI.Controllers
 {
-    [Route("v1.0/[controller]")]
+    [Route("[controller]")]
     [ApiController]
+    [ApiVersion("1.0")]
     public class HistoricalDataController : ControllerBase
     {
         private readonly HistoricalDataService historicalDataService;
@@ -26,46 +28,22 @@ namespace CrytpoInfo.CryptAPI.Controllers
 
         [HttpGet]
         [Route("FetchData")]
-        public IActionResult FetchData([FromQuery] HistoricalDataRequest requestInfo)
+        public IActionResult FetchData([FromQuery] [Required] HistoricalDataRequest requestInfo)
         {
-            var requestId = Guid.NewGuid();
-            if (!this.IsValidRequest(requestInfo, out BaseResponse errorReponse))
-            {
-                errorReponse.RequestId = requestId;
-                return BadRequest(errorReponse);
-            }
+            requestInfo.RequestId = Guid.NewGuid();
 
-            requestInfo.RequestId = requestId;
+            this.ThrowIfInvalidDatesInputted(requestInfo);
+
             var responseBody = this.historicalDataService.AcquireHistoricalData(requestInfo);
             return Ok(responseBody);
         }
 
-        private bool IsValidRequest(HistoricalDataRequest request, out BaseResponse errResponse)
+        private void ThrowIfInvalidDatesInputted(HistoricalDataRequest request)
         {
-            errResponse = null;
-            string errMsg = string.Empty;
-
             if (request.StartDate.CompareTo(request.EndDate) > 0)
             {
-                errMsg = "StartDate is after EndDate";
+                throw new ClientException(5, "StartDate is after EndDate", request.RequestId);
             }
-
-            if (request.TimeInterval < 1)
-            {
-                errMsg = "Please ensure time interval is a non negative value";
-            }
-
-            if (!string.IsNullOrEmpty(errMsg))
-            {
-                errResponse = new ErrorResponse()
-                {
-                    Success = false,
-                    ErrorMessage = errMsg
-                };
-                return false;
-            }
-
-            return true;
         }
     }
 }
