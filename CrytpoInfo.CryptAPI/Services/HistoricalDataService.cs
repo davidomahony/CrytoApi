@@ -1,7 +1,6 @@
 ﻿using CrytpoInfo.Buisness.Exceptions;
 using CrytpoInfo.Core.Repositories;
 using CrytpoInfo.Models;
-using System;
 using System.Linq;
 
 namespace CrytpoInfo.CryptAPI.Services
@@ -15,7 +14,7 @@ namespace CrytpoInfo.CryptAPI.Services
             this.repository = repository;
         }
 
-        public HistoricalDataResponse AcquireHistoricalData(HistoricalDataRequest requestInformation)
+        public HistoricalDataResponse AcquireHistoricalData(HistoricalDataRequestInternal requestInformation)
         {
             var historicalDataResult = this.repository.AcquireHistoricalData(requestInformation);
             if (historicalDataResult is null)

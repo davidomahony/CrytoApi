@@ -24,7 +24,7 @@ namespace CrytpoInfo.Buisness.Repositories
             this.supportedCurrenciesIndex = new Dictionary<string, string>(dictionaryOfCurrencies, StringComparer.OrdinalIgnoreCase);
         }
 
-        public HistoricalDataResults AcquireHistoricalData(HistoricalDataRequest information)
+        public HistoricalDataResults AcquireHistoricalData(HistoricalDataRequestInternal information)
         {
             var request = this.GenerateRequestMessage(information);
 
@@ -42,13 +42,13 @@ namespace CrytpoInfo.Buisness.Repositories
             }
             catch (Exception ex)
             {
-                // logg this
+                throw new ApiException(System.Net.HttpStatusCode.InternalServerError, 50, ex.Message, information.RequestId);
             }
 
             throw new ApiException(System.Net.HttpStatusCode.InternalServerError, 50, "Failed to fetch results from ", information.RequestId);
         }
 
-        private HttpRequestMessage GenerateRequestMessage(HistoricalDataRequest information)
+        private HttpRequestMessage GenerateRequestMessage(HistoricalDataRequestInternal information)
         {
             var startTimeUnix = ((DateTimeOffset)information.StartDate).ToUnixTimeSeconds();
             var endTimeUnix = ((DateTimeOffset)information.EndDate).ToUnixTimeSeconds();
@@ -66,7 +66,7 @@ namespace CrytpoInfo.Buisness.Repositories
                 return request;
             }
 
-            throw new ApiException(System.Net.HttpStatusCode.BadRequest, 50, "Inputted currency is not supported", information.RequestId); ;
+            throw new ClientException(50, "Inputted currency is not supported", information.RequestId); ;
         }
     }
 }

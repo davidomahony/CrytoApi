@@ -13,7 +13,5 @@ namespace CrytpoInfo.Models
 
         [Required]
         public DateTime EndDate { get; set; }
-
-        public Guid RequestId { get; set; }
     }
 }

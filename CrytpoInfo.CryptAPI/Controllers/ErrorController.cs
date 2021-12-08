@@ -5,6 +5,7 @@ using CrytpoInfo.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 
 namespace CrytpoInfo.CryptAPI.Controllers
 {
@@ -12,6 +13,10 @@ namespace CrytpoInfo.CryptAPI.Controllers
     [ApiExplorerSettings(IgnoreApi = true)]
     public class ErrorController : ControllerBase
     {
+        private ILogger<ErrorController> logger;
+
+        public ErrorController(ILogger<ErrorController> logger) => this.logger = logger;
+
         [Route("error")]
         public ErrorResponse Error()
         {
@@ -21,10 +26,12 @@ namespace CrytpoInfo.CryptAPI.Controllers
             // As we only have one exception at the moment this will do.
             if (exception is ApiException apiException)
             {
-                var responseBuilder = new ApiExceptionErrorResponseBuilder(apiException);
-                return responseBuilder.BuildResponse();
+                var response = new ApiExceptionErrorResponseBuilder(apiException).BuildResponse();
+                this.logger.LogWarning($"Returning response {response.StatusCode} due to {response.ErrorMessage} with requestId {response.RequestId}");
+                return response;
             }
 
+            this.logger.LogError($"Failed to catch exception with message {exception.Message}");
             // This is weird and should not happen.
             return new ErrorResponse()
             {

@@ -23,22 +23,27 @@ namespace CrytpoInfo.CryptAPI.Controllers
         [Route("Info")]
         public IActionResult Info()
         {
-            return Ok("Just using coin market ATM");
+            var basicInfo = new
+            {
+                InformationSource = "CoinMarket",
+                Url = "https://api.coinmarketcap.com/data-api/v3/cryptocurrency/historical"
+            };
+            return Ok(basicInfo);
         }
 
         [HttpGet]
         [Route("FetchData")]
         public IActionResult FetchData([FromQuery] [Required] HistoricalDataRequest requestInfo)
         {
-            requestInfo.RequestId = Guid.NewGuid();
+            var internalRequest = new HistoricalDataRequestInternal(requestInfo);
 
-            this.ThrowIfInvalidDatesInputted(requestInfo);
+            this.ThrowIfInvalidDatesInputted(internalRequest);
 
-            var responseBody = this.historicalDataService.AcquireHistoricalData(requestInfo);
+            var responseBody = this.historicalDataService.AcquireHistoricalData(internalRequest);
             return Ok(responseBody);
         }
 
-        private void ThrowIfInvalidDatesInputted(HistoricalDataRequest request)
+        private void ThrowIfInvalidDatesInputted(HistoricalDataRequestInternal request)
         {
             if (request.StartDate.CompareTo(request.EndDate) > 0)
             {
