@@ -37,13 +37,13 @@ namespace CrytpoInfo.CryptAPI.Controllers
         {
             var internalRequest = new HistoricalDataRequestInternal(requestInfo);
 
-            this.ThrowIfInvalidDatesInputted(internalRequest);
+            ThrowIfInvalidDatesInputted(internalRequest);
 
             var responseBody = this.historicalDataService.AcquireHistoricalData(internalRequest);
             return Ok(responseBody);
         }
 
-        private void ThrowIfInvalidDatesInputted(HistoricalDataRequestInternal request)
+        private static void ThrowIfInvalidDatesInputted(HistoricalDataRequestInternal request)
         {
             if (request.StartDate.CompareTo(request.EndDate) > 0)
             {
