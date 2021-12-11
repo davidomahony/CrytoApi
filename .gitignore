@@ -82,3 +82,6 @@ obj
 /CrytpoInfo.CryptAPI/bin/Debug/net5.0/CrytpoInfo.CryptAPI.pdb
 *.exe
 *.dll
+*.manifest
+*.testlog
+*.suo
