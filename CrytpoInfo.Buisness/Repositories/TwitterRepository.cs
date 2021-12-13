@@ -6,6 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 
 namespace CrytpoInfo.Buisness.Repositories
@@ -15,16 +16,15 @@ namespace CrytpoInfo.Buisness.Repositories
         private IConfiguration configuration;
         private HttpClient client;
 
-        public TwitterRepository(IConfiguration configuration, HttpClient client)
+        public TwitterRepository(HttpClient client)
         {
-            this.configuration = configuration;
             this.client = client;
         }
 
         public string GetAccountId(TwitterUserCrytpoDataRequestInternal twitterUserCrytpoDataRequestInternal)
         {
-            var request = new HttpRequestMessage(HttpMethod.Get, new Uri($"https://api.twitter.com/2/users/by/username/{twitterUserCrytpoDataRequestInternal.TwitterUserName}"));
-            request.Headers.Add("Authorization", "Bearer YouWillNeverGetThis");
+            var request = new HttpRequestMessage(HttpMethod.Get, new Uri($"{this.client.BaseAddress}users/by/username/{twitterUserCrytpoDataRequestInternal.TwitterUserName}"));
+            request.Headers.Add("Authorization", "Bearer xxx");
 
             var result = this.client.Send(request);
             if (result.StatusCode == System.Net.HttpStatusCode.OK)
@@ -51,8 +51,13 @@ namespace CrytpoInfo.Buisness.Repositories
                 if (result.StatusCode == System.Net.HttpStatusCode.OK)
                 {
                     var responseContent = result.Content.ReadAsStringAsync().Result;
-                    var deserializedResponse = JsonConvert.DeserializeObject<IEnumerable<BaseTweet>>(responseContent);
-                    return deserializedResponse;
+                    // need to deserialize properly
+                    var deserializedResponse = JsonConvert.DeserializeObject<TwitterUserGetTweetsReponse>(responseContent);
+                    return deserializedResponse.Data.Select(itm => new BaseTweet()
+                    {
+                        Text = itm.Text,
+                        Id = itm.Id
+                    });
                 }
             }
             catch (Exception ex)
@@ -65,8 +70,8 @@ namespace CrytpoInfo.Buisness.Repositories
 
         private HttpRequestMessage GenerateRequestMessage(string accountId, int numberOfTweets)
         {
-            var request = new HttpRequestMessage(HttpMethod.Get, new Uri($"https://api.twitter.com/2/users/{accountId}/tweets?max_results={numberOfTweets}&tweet.fields=created_at,public_metrics"));
-            request.Headers.Add("Authorization", "Bearer YouWillNeverGetThis");
+            var request = new HttpRequestMessage(HttpMethod.Get, new Uri($"{this.client.BaseAddress}users/{accountId}/tweets?max_results={numberOfTweets}&tweet.fields=created_at,public_metrics"));
+            request.Headers.Add("Authorization", "Bearer AAAAAAAAAAAAAAAAAAAAANwkWwEAAAAATWWNmX%2BytRMBXOwEiLYrPGLn3lI%3DAAxoshssMmOTYZaP1t6M5XG6MkryZAuKyKLhVVJoI74EkHJDXF");
             return request;
         }
     }
