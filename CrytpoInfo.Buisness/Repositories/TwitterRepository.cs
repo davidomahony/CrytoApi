@@ -2,7 +2,6 @@
 using CrytpoInfo.Buisness.Exceptions;
 using CrytpoInfo.Core.Repositories;
 using CrytpoInfo.Models;
-using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -13,7 +12,6 @@ namespace CrytpoInfo.Buisness.Repositories
 {
     public class TwitterRepository : ITwitterRepository
     {
-        private IConfiguration configuration;
         private HttpClient client;
 
         public TwitterRepository(HttpClient client)
@@ -24,7 +22,7 @@ namespace CrytpoInfo.Buisness.Repositories
         public string GetAccountId(TwitterUserCrytpoDataRequestInternal twitterUserCrytpoDataRequestInternal)
         {
             var request = new HttpRequestMessage(HttpMethod.Get, new Uri($"{this.client.BaseAddress}users/by/username/{twitterUserCrytpoDataRequestInternal.TwitterUserName}"));
-            request.Headers.Add("Authorization", "Bearer xxx");
+            request.Headers.Add("Authorization", "Bearer XXX");
 
             var result = this.client.Send(request);
             if (result.StatusCode == System.Net.HttpStatusCode.OK)
@@ -71,7 +69,7 @@ namespace CrytpoInfo.Buisness.Repositories
         private HttpRequestMessage GenerateRequestMessage(string accountId, int numberOfTweets)
         {
             var request = new HttpRequestMessage(HttpMethod.Get, new Uri($"{this.client.BaseAddress}users/{accountId}/tweets?max_results={numberOfTweets}&tweet.fields=created_at,public_metrics"));
-            request.Headers.Add("Authorization", "Bearer AAAAAAAAAAAAAAAAAAAAANwkWwEAAAAATWWNmX%2BytRMBXOwEiLYrPGLn3lI%3DAAxoshssMmOTYZaP1t6M5XG6MkryZAuKyKLhVVJoI74EkHJDXF");
+            request.Headers.Add("Authorization", "Bearer XX");
             return request;
         }
     }
