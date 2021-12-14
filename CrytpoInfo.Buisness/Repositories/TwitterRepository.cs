@@ -2,6 +2,7 @@
 using CrytpoInfo.Buisness.Exceptions;
 using CrytpoInfo.Core.Repositories;
 using CrytpoInfo.Models;
+using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -13,18 +14,20 @@ namespace CrytpoInfo.Buisness.Repositories
     public class TwitterRepository : ITwitterRepository
     {
         private HttpClient client;
+        private IConfiguration configuration;
 
-        public TwitterRepository(HttpClient client)
+        public TwitterRepository(HttpClient client, IConfiguration configuration)
         {
             this.client = client;
+            this.configuration = configuration;
         }
 
         public string GetAccountId(TwitterUserCrytpoDataRequestInternal twitterUserCrytpoDataRequestInternal)
         {
-            var request = new HttpRequestMessage(HttpMethod.Get, new Uri($"{this.client.BaseAddress}users/by/username/{twitterUserCrytpoDataRequestInternal.TwitterUserName}"));
-            request.Headers.Add("Authorization", "Bearer XXX");
-
+            var request = new HttpRequestMessage(HttpMethod.Get, new Uri(string.Format(this.configuration["Twitter:GetAccountIdUrl"], twitterUserCrytpoDataRequestInternal.TwitterUserName)));
+            request.Headers.Add("Authorization", "Twitter:BearerToken");
             var result = this.client.Send(request);
+
             if (result.StatusCode == System.Net.HttpStatusCode.OK)
             {
                 var responseContent = result.Content.ReadAsStringAsync().Result;
@@ -39,9 +42,11 @@ namespace CrytpoInfo.Buisness.Repositories
         public IEnumerable<BaseTweet> GetNumberOfTweetsForAccountID(TwitterUserCrytpoDataRequestInternal twitterUserCrytpoDataRequestInternal)
         {
             twitterUserCrytpoDataRequestInternal.AccountId = this.GetAccountId(twitterUserCrytpoDataRequestInternal);
-            var request = this.GenerateRequestMessage(
-                twitterUserCrytpoDataRequestInternal.AccountId,
-                twitterUserCrytpoDataRequestInternal.NumberOfTweets);
+            var request = new HttpRequestMessage(
+                HttpMethod.Get,
+                new Uri(
+                    $"{string.Format(this.configuration["Twitter:GetUserTweets"], twitterUserCrytpoDataRequestInternal.AccountId)}/tweets?max_results={twitterUserCrytpoDataRequestInternal.NumberOfTweets}&tweet.fields=created_at,public_metrics"));
+            request.Headers.Add("Authorization", "Bearer XX");
 
             try
             {
@@ -64,13 +69,6 @@ namespace CrytpoInfo.Buisness.Repositories
             }
 
             throw new ApiException(System.Net.HttpStatusCode.InternalServerError, 50, "Failed to fetch results from ", twitterUserCrytpoDataRequestInternal.RequestId);
-        }
-
-        private HttpRequestMessage GenerateRequestMessage(string accountId, int numberOfTweets)
-        {
-            var request = new HttpRequestMessage(HttpMethod.Get, new Uri($"{this.client.BaseAddress}users/{accountId}/tweets?max_results={numberOfTweets}&tweet.fields=created_at,public_metrics"));
-            request.Headers.Add("Authorization", "Bearer XX");
-            return request;
         }
     }
 }
