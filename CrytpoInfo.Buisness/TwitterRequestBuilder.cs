@@ -8,13 +8,11 @@ namespace CrytpoInfo.Buisness
     public class TwitterRequestBuilder : IHttpRequestBuilder
     {
         private HttpMethod method;
-        private string baseUrl;
         private string completeUrl;
 
         public TwitterRequestBuilder(HttpMethod method, string baseUrl)
         {
             this.method = method;
-            this.baseUrl = baseUrl;
             this.completeUrl = baseUrl;
         }
 

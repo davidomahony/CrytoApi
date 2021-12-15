@@ -1,13 +1,13 @@
-﻿using CrytpoInfo.Buisness.Exceptions;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net.Http;
+using CrytpoInfo.Buisness.Exceptions;
 using CrytpoInfo.Core.CoinMarket;
 using CrytpoInfo.Core.Repositories;
 using CrytpoInfo.Models;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
 
 namespace CrytpoInfo.Buisness.Repositories
 {
